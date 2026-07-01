@@ -6,36 +6,35 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "variants")
+public class Variant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    @Column(length = 1000)
-    private String description;
+    @Column(nullable = false)
+    private String size;
+
+    @Column(nullable = false)
+    private String color;
 
     @Column(nullable = false)
     private Double price;
 
     @Column(nullable = false)
-    private String category;
+    private Integer stockQuantity;
 
-    @Column(nullable = true)
+    private String sku;
+
     private String imageUrl;
 
     @Column(nullable = false)
-    private Integer stock = 0;
-
-    @Column(nullable = true)
-    private String size;
-
-    @Column(nullable = true)
-    private String color;
+    private Boolean active = true;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
