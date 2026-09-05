@@ -31,6 +31,9 @@ public class Product {
     @Column(nullable = false)
     private Integer stock = 0;
 
+    @Column(nullable = false)
+    private Boolean active = true;
+
     @Column(nullable = true)
     private String size;
 
@@ -39,4 +42,10 @@ public class Product {
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(nullable = false)
+    private Integer discountPercent = 0;
+
+    @Column(nullable = false)
+    private Boolean isNewArrival = false;
 }

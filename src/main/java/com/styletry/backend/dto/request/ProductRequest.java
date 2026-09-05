@@ -16,4 +16,6 @@ public class ProductRequest {
     private Integer stock;
     private String size;
     private String color;
+    private Integer discountPercent = 0;
+    private Boolean isNewArrival = false;
 }

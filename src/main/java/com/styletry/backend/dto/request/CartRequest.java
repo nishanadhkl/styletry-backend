@@ -3,8 +3,7 @@ package com.styletry.backend.dto.request;
 import lombok.Data;
 
 @Data
-public class OrderItemRequest {
+public class CartRequest {
     private Long variantId;
-    private Long productId;
     private Integer quantity;
 }

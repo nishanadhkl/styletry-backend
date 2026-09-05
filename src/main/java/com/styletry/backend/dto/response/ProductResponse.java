@@ -13,4 +13,7 @@ public class ProductResponse {
     private Integer stock;
     private String size;
     private String color;
+    private Boolean active;
+    private Integer discountPercent;
+    private Boolean isNewArrival;
 }

@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -36,7 +37,7 @@ public class SecurityConfig {
                 .map(user -> org.springframework.security.core.userdetails.User
                         .withUsername(user.getEmail())
                         .password(user.getPassword())
-                        .roles(user.getRole())
+                        .authorities(user.getRole())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
@@ -68,9 +69,19 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/auth/register", "/auth/login", "/auth/profile").permitAll()
-                        .requestMatchers("/api/products/**").permitAll()
-                        .requestMatchers("/api/variants/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/variants/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/variants/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/variants/**").hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/variants/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/categories/**").permitAll()
+                        .requestMatchers("/api/orders/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/orders/**").authenticated()
+                        .requestMatchers("/api/users/**").hasAuthority("ADMIN")
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )

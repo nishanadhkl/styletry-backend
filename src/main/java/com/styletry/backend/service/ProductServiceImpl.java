@@ -4,7 +4,6 @@ import com.styletry.backend.dto.request.ProductRequest;
 import com.styletry.backend.dto.response.ProductResponse;
 import com.styletry.backend.model.Product;
 import com.styletry.backend.repository.ProductRepository;
-import com.styletry.backend.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +27,8 @@ public class ProductServiceImpl implements ProductService {
         product.setStock(request.getStock());
         product.setSize(request.getSize());
         product.setColor(request.getColor());
+        product.setDiscountPercent(request.getDiscountPercent() != null ? request.getDiscountPercent() : 0);
+        product.setIsNewArrival(request.getIsNewArrival() != null ? request.getIsNewArrival() : false);
 
         Product saved = productRepository.save(product);
         return mapToResponse(saved);
@@ -57,6 +58,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductResponse> getSaleProducts() {
+        return productRepository.findByDiscountPercentGreaterThan(0)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProductResponse> getNewArrivals() {
+        return productRepository.findByIsNewArrivalTrue()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<ProductResponse> searchProducts(String name) {
         return productRepository.findByNameContainingIgnoreCase(name)
                 .stream()
@@ -77,6 +94,8 @@ public class ProductServiceImpl implements ProductService {
         product.setStock(request.getStock());
         product.setSize(request.getSize());
         product.setColor(request.getColor());
+        product.setDiscountPercent(request.getDiscountPercent() != null ? request.getDiscountPercent() : 0);
+        product.setIsNewArrival(request.getIsNewArrival() != null ? request.getIsNewArrival() : false);
 
         Product updated = productRepository.save(product);
         return mapToResponse(updated);
@@ -98,6 +117,9 @@ public class ProductServiceImpl implements ProductService {
         response.setStock(product.getStock());
         response.setSize(product.getSize());
         response.setColor(product.getColor());
+        response.setActive(product.getActive());
+        response.setDiscountPercent(product.getDiscountPercent());
+        response.setIsNewArrival(product.getIsNewArrival());
         return response;
     }
 }

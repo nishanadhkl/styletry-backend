@@ -29,4 +29,15 @@ public class OrderController {
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(orderService.getUserOrders(userDetails.getUsername()));
     }
+
+    @GetMapping("/admin/all")
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    @PutMapping("/admin/{id}/status")
+    public ResponseEntity<OrderResponse> updateOrderStatus(@PathVariable Long id,
+                                                           @RequestParam String status) {
+        return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
+    }
 }

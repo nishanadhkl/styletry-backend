@@ -36,6 +36,16 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByCategory(category));
     }
 
+    @GetMapping("/sale")
+    public ResponseEntity<List<ProductResponse>> getSaleProducts() {
+        return ResponseEntity.ok(productService.getSaleProducts());
+    }
+
+    @GetMapping("/new-arrivals")
+    public ResponseEntity<List<ProductResponse>> getNewArrivals() {
+        return ResponseEntity.ok(productService.getNewArrivals());
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<ProductResponse>> searchProducts(@RequestParam String name) {
         return ResponseEntity.ok(productService.searchProducts(name));

@@ -20,6 +20,10 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @ManyToOne
+    @JoinColumn(name = "variant_id")
+    private Variant variant;
+
     @Column(nullable = false)
     private Integer quantity;
 
