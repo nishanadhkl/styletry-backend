@@ -48,8 +48,12 @@ public class CartServiceImpl implements CartService {
                 .filter(i -> i.getVariant().getId().equals(request.getVariantId()))
                 .findFirst();
 
+        int existingQuantity = existing.map(CartItem::getQuantity).orElse(0);
+        int requestedQuantity = existingQuantity + request.getQuantity();
+        validateStock(variant, requestedQuantity);
+
         if (existing.isPresent()) {
-            existing.get().setQuantity(existing.get().getQuantity() + request.getQuantity());
+            existing.get().setQuantity(requestedQuantity);
             cartItemRepository.save(existing.get());
         } else {
             CartItem item = new CartItem();
@@ -67,6 +71,7 @@ public class CartServiceImpl implements CartService {
     public CartResponse updateCartItem(String email, Long itemId, Integer quantity) {
         CartItem item = cartItemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        validateStock(item.getVariant(), quantity);
         item.setQuantity(quantity);
         cartItemRepository.save(item);
         Cart cart = getOrCreateCart(email);
@@ -109,5 +114,17 @@ public class CartServiceImpl implements CartService {
         response.setTotalItems(items.stream().mapToInt(CartItemResponse::getQuantity).sum());
         response.setTotalAmount(items.stream().mapToDouble(CartItemResponse::getSubtotal).sum());
         return response;
+    }
+
+    private void validateStock(Variant variant, Integer requestedQuantity) {
+        if (requestedQuantity == null || requestedQuantity < 1) {
+            throw new RuntimeException("Quantity must be at least 1");
+        }
+
+        int available = variant.getStockQuantity() == null ? 0 : variant.getStockQuantity();
+        if (requestedQuantity > available) {
+            throw new RuntimeException("Only " + available + " item(s) available in stock for "
+                    + variant.getProduct().getName() + " (" + variant.getSize() + ", " + variant.getColor() + ")");
+        }
     }
 }

@@ -1,10 +1,12 @@
 package com.styletry.backend.service;
 
 import com.styletry.backend.dto.request.ProductRequest;
+import com.styletry.backend.dto.response.PageResponse;
 import com.styletry.backend.dto.response.ProductResponse;
 import com.styletry.backend.model.Product;
 import com.styletry.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +34,22 @@ public class ProductServiceImpl implements ProductService {
 
         Product saved = productRepository.save(product);
         return mapToResponse(saved);
+    }
+
+    @Override
+    public PageResponse<ProductResponse> getProductsPage(String category, Boolean saleOnly, Boolean newOnly, String query, Pageable pageable) {
+        String normalizedCategory = category == null || category.isBlank() ? null : category;
+        String normalizedQuery = query == null || query.isBlank() ? null : query.trim();
+
+        return PageResponse.from(productRepository
+                .findProductsPage(
+                        normalizedCategory,
+                        Boolean.TRUE.equals(saleOnly),
+                        Boolean.TRUE.equals(newOnly),
+                        normalizedQuery,
+                        pageable
+                )
+                .map(this::mapToResponse));
     }
 
     @Override

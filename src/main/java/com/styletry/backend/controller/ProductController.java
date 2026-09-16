@@ -1,9 +1,12 @@
 package com.styletry.backend.controller;
 
 import com.styletry.backend.dto.request.ProductRequest;
+import com.styletry.backend.dto.response.PageResponse;
 import com.styletry.backend.dto.response.ProductResponse;
 import com.styletry.backend.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +25,23 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductResponse>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<?> getAllProducts(@RequestParam(required = false) Integer page,
+                                            @RequestParam(required = false) Integer size,
+                                            @RequestParam(required = false) String category,
+                                            @RequestParam(required = false) Boolean sale,
+                                            @RequestParam(required = false) Boolean newest,
+                                            @RequestParam(required = false, name = "q") String query) {
+        if (page == null && size == null && category == null && sale == null && newest == null && query == null) {
+            return ResponseEntity.ok(productService.getAllProducts());
+        }
+
+        PageRequest pageable = PageRequest.of(
+                page != null ? page : 0,
+                size != null ? size : 12,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+        PageResponse<ProductResponse> response = productService.getProductsPage(category, sale, newest, query, pageable);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

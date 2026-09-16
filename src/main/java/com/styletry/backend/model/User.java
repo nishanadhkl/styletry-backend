@@ -25,6 +25,10 @@ public class User {
     @Column(nullable = false)
     private String role = "USER";
 
+    private Boolean active = true;
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    private LocalDateTime lastLoginAt;
 }

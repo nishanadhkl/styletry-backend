@@ -11,11 +11,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+
+    private static final Pattern STRONG_PASSWORD =
+            Pattern.compile("^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{6,}$");
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -24,13 +32,21 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+        String email = request.getEmail().trim().toLowerCase();
+        if (userRepository.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User already exists with this email");
+        }
+
+        if (!STRONG_PASSWORD.matcher(request.getPassword()).matches()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Password must contain at least one uppercase letter, one digit, and one special character"
+            );
         }
 
         User user = new User();
-        user.setFullName(request.getFullName());
-        user.setEmail(request.getEmail());
+        user.setFullName(request.getFullName().trim());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole("USER");
 
@@ -42,12 +58,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(LoginRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(email, request.getPassword())
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setLastLoginAt(LocalDateTime.now());
+        user.setActive(true);
+        userRepository.save(user);
 
         String token = jwtUtil.generateToken(user.getEmail());
         return new AuthResponse(token, user.getEmail(), user.getFullName(), user.getRole());
